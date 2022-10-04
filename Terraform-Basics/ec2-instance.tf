@@ -11,11 +11,18 @@ terraform {
 # Provider Block
 provider "aws" {
   profile = "default" # AWS Credentials Profile configured on your local desktop terminal  $HOME/.aws/credentials
-  region  = "us-east-1"
+  region  = var.aws_region
 }
 
 # Resource Block
-resource "aws_instance" "ec2demo" {
-  ami           = "ami-06489866022e12a14" # Amazon Linux in us-east-1, update as per your region
-  instance_type = "t2.micro"
+# Create EC2 Instance - Amazon Linux
+resource "aws_instance" "my-ec2-vm" {
+  ami           = data.aws_ami.amz_linux.id
+  instance_type = var.instance_type
+  key_name      = "Terraform-key"
+	user_data = file("apache-install.sh")  
+  vpc_security_group_ids = [aws_security_group.vpc_ssh.id, aws_security_group.vpc_web.id]
+  tags = {
+    "Name" = "amz-linux-vm"
+  }
 }
